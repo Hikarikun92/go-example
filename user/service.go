@@ -1,7 +1,7 @@
 package user
 
 type Repository interface {
-	FindAll() []User
+	FindAll() []*User
 	FindCredentialsByUsername(username string) *Credentials
 }
 
@@ -9,7 +9,7 @@ type Service struct {
 	Repository
 }
 
-func (s Service) FindAll() []User {
+func (s Service) FindAll() []*User {
 	return s.Repository.FindAll()
 }
 

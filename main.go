@@ -1,16 +1,20 @@
 package main
 
 import (
-	"fmt"
 	"go-example/user"
+	"log"
+	"net/http"
 )
 
 func main() {
 	repository := user.NewRepository()
 	service := user.NewService(repository)
+	controller := user.NewController(service)
 
-	fmt.Println(service.FindAll())
-	fmt.Println(service.FindCredentialsByUsername("user1"))
-	fmt.Println(service.FindCredentialsByUsername("user2"))
-	fmt.Println(service.FindCredentialsByUsername("user3"))
+	http.HandleFunc("/users", controller.FindAll)
+
+	err := http.ListenAndServe("localhost:8080", nil)
+	if err != nil {
+		log.Panicln("Error starting server", err)
+	}
 }

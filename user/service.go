@@ -1,18 +1,22 @@
 package user
 
-type Repository interface {
+type Service interface {
 	FindAll() []*User
 	FindCredentialsByUsername(username string) *Credentials
 }
 
-type Service struct {
-	Repository
+type serviceImpl struct {
+	repository Repository
 }
 
-func (s Service) FindAll() []*User {
-	return s.Repository.FindAll()
+func NewService(repository Repository) Service {
+	return &serviceImpl{repository: repository}
 }
 
-func (s Service) FindCredentialsByUsername(username string) *Credentials {
-	return s.Repository.FindCredentialsByUsername(username)
+func (s *serviceImpl) FindAll() []*User {
+	return s.repository.FindAll()
+}
+
+func (s *serviceImpl) FindCredentialsByUsername(username string) *Credentials {
+	return s.repository.FindCredentialsByUsername(username)
 }

@@ -7,7 +7,7 @@ type User struct {
 	Username string
 }
 
-func (u User) String() string {
+func (u *User) String() string {
 	return "User(Id=" + strconv.Itoa(u.Id) + ", Username=" + u.Username + ")"
 }
 

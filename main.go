@@ -6,8 +6,8 @@ import (
 )
 
 func main() {
-	repository := user.RepositoryImpl{}
-	service := user.Service{Repository: repository}
+	repository := user.NewRepository()
+	service := user.NewService(repository)
 
 	fmt.Println(service.FindAll())
 	fmt.Println(service.FindCredentialsByUsername("user1"))

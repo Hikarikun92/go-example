@@ -2,7 +2,6 @@ package user
 
 type Service interface {
 	FindAll() []*User
-	FindCredentialsByUsername(username string) *Credentials
 }
 
 type serviceImpl struct {
@@ -15,8 +14,4 @@ func NewService(repository Repository) Service {
 
 func (s *serviceImpl) FindAll() []*User {
 	return s.repository.FindAll()
-}
-
-func (s *serviceImpl) FindCredentialsByUsername(username string) *Credentials {
-	return s.repository.FindCredentialsByUsername(username)
 }

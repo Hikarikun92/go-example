@@ -3,8 +3,8 @@ package user
 import "strconv"
 
 type User struct {
-	Id       int    `json:"id"`
-	Username string `json:"username"`
+	Id       int
+	Username string
 }
 
 func (u *User) String() string {

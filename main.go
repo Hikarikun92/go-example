@@ -2,6 +2,7 @@ package main
 
 import (
 	"go-example/user"
+	"go-example/user/rest"
 	"log"
 	"net/http"
 )
@@ -9,7 +10,7 @@ import (
 func main() {
 	repository := user.NewRepository()
 	service := user.NewService(repository)
-	controller := user.NewController(service)
+	controller := rest.NewController(service)
 
 	http.HandleFunc("/users", controller.FindAll)
 

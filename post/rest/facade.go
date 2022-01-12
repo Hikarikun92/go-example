@@ -2,7 +2,7 @@ package rest
 
 import (
 	"go-example/post"
-	user_rest "go-example/user/rest"
+	userRest "go-example/user/rest"
 	"go-example/util"
 )
 
@@ -49,6 +49,6 @@ func toPostByIdDto(post *post.Post) *PostByIdDto {
 		Title:         post.Title,
 		Body:          post.Body,
 		PublishedDate: util.TimeToIso(post.PublishedDate),
-		User:          user_rest.ToReadDto(post.User),
+		User:          userRest.ToReadDto(post.User),
 	}
 }

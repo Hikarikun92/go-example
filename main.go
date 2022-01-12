@@ -10,7 +10,8 @@ import (
 func main() {
 	repository := user.NewRepository()
 	service := user.NewService(repository)
-	controller := rest.NewController(service)
+	facade := rest.NewFacade(service)
+	controller := rest.NewController(facade)
 
 	http.HandleFunc("/users", controller.FindAll)
 

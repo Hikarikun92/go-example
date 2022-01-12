@@ -1,7 +1,6 @@
 package rest
 
 import (
-	. "go-example/user"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -9,15 +8,15 @@ import (
 	"testing"
 )
 
-func TestFindAllWithSuccess(t *testing.T) {
-	service := serviceImpl{findAllImpl: func() []*User {
-		return []*User{
+func Test_controllerImpl_FindAll_withSuccess(t *testing.T) {
+	facade := mockFacade{findAllImpl: func() []*UserReadDto {
+		return []*UserReadDto{
 			{Id: 1, Username: "Administrator"},
 			{Id: 2, Username: "John Doe"},
 			{Id: 3, Username: "Mary Doe"},
 		}
 	}}
-	controller := controllerImpl{service: &service}
+	controller := controllerImpl{facade: &facade}
 
 	req := httptest.NewRequest(http.MethodGet, "/", nil)
 	w := httptest.NewRecorder()
@@ -46,10 +45,10 @@ func TestFindAllWithSuccess(t *testing.T) {
 	}
 }
 
-type serviceImpl struct {
-	findAllImpl func() []*User
+type mockFacade struct {
+	findAllImpl func() []*UserReadDto
 }
 
-func (s *serviceImpl) FindAll() []*User {
-	return s.findAllImpl()
+func (f *mockFacade) FindAll() []*UserReadDto {
+	return f.findAllImpl()
 }

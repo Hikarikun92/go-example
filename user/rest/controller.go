@@ -2,7 +2,6 @@ package rest
 
 import (
 	"encoding/json"
-	"go-example/user"
 	"net/http"
 	"strconv"
 )
@@ -11,12 +10,12 @@ type Controller interface {
 	FindAll(w http.ResponseWriter, request *http.Request)
 }
 
-func NewController(service user.Service) Controller {
-	return &controllerImpl{service: service}
+func NewController(facade Facade) Controller {
+	return &controllerImpl{facade: facade}
 }
 
 type controllerImpl struct {
-	service user.Service
+	facade Facade
 }
 
 func (c *controllerImpl) FindAll(w http.ResponseWriter, req *http.Request) {
@@ -25,7 +24,7 @@ func (c *controllerImpl) FindAll(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	users := ToReadDtos(c.service.FindAll())
+	users := c.facade.FindAll()
 
 	jsonBytes, err := json.Marshal(users)
 	if err != nil {

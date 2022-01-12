@@ -29,13 +29,9 @@ func TestToReadDtos(t *testing.T) {
 	}
 
 	for i, dto := range dtos {
-		entity := entities[i]
-		if dto.Id != entity.Id {
-			t.Errorf("dtos[%v].Id: expected %v, got %v", i, entity.Id, dto.Id)
-		}
-
-		if dto.Username != entity.Username {
-			t.Errorf("dtos[%v].Username: expected %v, got %v", i, entity.Username, dto.Username)
+		expectedDto := ToReadDto(entities[i])
+		if *dto != *expectedDto {
+			t.Errorf("dtos[%v]: expected %v, got %v", i, expectedDto, dto)
 		}
 	}
 }

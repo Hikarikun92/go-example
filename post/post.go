@@ -6,9 +6,9 @@ import (
 )
 
 type Post struct {
-	Id            int       `json:"id"`
-	Title         string    `json:"title"`
-	Body          string    `json:"body"`
-	PublishedDate time.Time `json:"publishedDate"`
+	Id            int
+	Title         string
+	Body          string
+	PublishedDate time.Time
 	User          *user.User
 }

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/gorilla/mux"
 	"go-example/user"
 	"go-example/user/rest"
 	"log"
@@ -13,9 +14,10 @@ func main() {
 	facade := rest.NewFacade(service)
 	controller := rest.NewController(facade)
 
-	http.HandleFunc("/users", controller.FindAll)
+	router := mux.NewRouter().StrictSlash(true)
+	router.HandleFunc("/users", controller.FindAll).Methods(http.MethodGet)
 
-	err := http.ListenAndServe("localhost:8080", nil)
+	err := http.ListenAndServe("localhost:8080", router)
 	if err != nil {
 		log.Panicln("Error starting server", err)
 	}

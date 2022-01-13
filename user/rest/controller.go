@@ -19,11 +19,6 @@ type controllerImpl struct {
 }
 
 func (c *controllerImpl) FindAll(w http.ResponseWriter, req *http.Request) {
-	if req.Method != http.MethodGet {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
 	users := c.facade.FindAll()
 
 	jsonBytes, err := json.Marshal(users)

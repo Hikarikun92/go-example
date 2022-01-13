@@ -11,6 +11,10 @@ type Facade interface {
 	FindById(id int) *PostByIdDto
 }
 
+func NewFacade(service post.Service) Facade {
+	return &facadeImpl{service: service}
+}
+
 type facadeImpl struct {
 	service post.Service
 }

@@ -2,20 +2,29 @@ package main
 
 import (
 	"github.com/gorilla/mux"
+	"go-example/post"
+	postRest "go-example/post/rest"
 	"go-example/user"
-	"go-example/user/rest"
+	userRest "go-example/user/rest"
 	"log"
 	"net/http"
 )
 
 func main() {
-	repository := user.NewRepository()
-	service := user.NewService(repository)
-	facade := rest.NewFacade(service)
-	controller := rest.NewController(facade)
+	userRepository := user.NewRepository()
+	userService := user.NewService(userRepository)
+	userFacade := userRest.NewFacade(userService)
+	userController := userRest.NewController(userFacade)
+
+	postRepository := post.NewRepository()
+	postService := post.NewService(postRepository)
+	postFacade := postRest.NewFacade(postService)
+	postController := postRest.NewController(postFacade)
 
 	router := mux.NewRouter().StrictSlash(true)
-	router.HandleFunc("/users", controller.FindAll).Methods(http.MethodGet)
+	router.HandleFunc("/users", userController.FindAll).Methods(http.MethodGet)
+	router.HandleFunc("/users/{userId}/posts", postController.FindByUserId).Methods(http.MethodGet)
+	router.HandleFunc("/posts/{id}", postController.FindById).Methods(http.MethodGet)
 
 	err := http.ListenAndServe("localhost:8080", router)
 	if err != nil {

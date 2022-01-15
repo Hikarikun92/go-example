@@ -2,6 +2,7 @@ package rest
 
 import (
 	"github.com/gorilla/mux"
+	"go-example/user/rest"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -80,13 +81,74 @@ func Test_FindByUserId_withSuccess(t *testing.T) {
 }
 
 func Test_FindById_wrongId(t *testing.T) {
-	panic("TODO")
+	facade := mockFacade{}
+	controller := controllerImpl{facade: &facade}
+
+	req := httptest.NewRequest(http.MethodGet, "/", nil)
+	req = mux.SetURLVars(req, map[string]string{"id": "asdf"})
+
+	w := httptest.NewRecorder()
+	controller.FindById(w, req)
+
+	response := w.Result()
+	if response.StatusCode != http.StatusBadRequest {
+		t.Errorf("Got status %v, wanted status %v", response.StatusCode, http.StatusBadRequest)
+	}
 }
 
 func Test_FindById_notFound(t *testing.T) {
-	panic("TODO")
+	facade := mockFacade{findByIdImpl: func(id int) *PostByIdDto { return nil }}
+	controller := controllerImpl{facade: &facade}
+
+	req := httptest.NewRequest(http.MethodGet, "/", nil)
+	req = mux.SetURLVars(req, map[string]string{"id": "18"})
+
+	w := httptest.NewRecorder()
+	controller.FindById(w, req)
+
+	response := w.Result()
+	if response.StatusCode != http.StatusNotFound {
+		t.Errorf("Got status %v, wanted status %v", response.StatusCode, http.StatusNotFound)
+	}
 }
 
 func Test_FindById_success(t *testing.T) {
-	panic("TODO")
+	facade := mockFacade{findByIdImpl: func(id int) *PostByIdDto {
+		return &PostByIdDto{
+			Id:            id,
+			Title:         "Test post",
+			Body:          "Some example post",
+			PublishedDate: "2019-11-23T10:42:36",
+			User:          &rest.UserReadDto{Id: 4, Username: "Some user"},
+		}
+	}}
+	controller := controllerImpl{facade: &facade}
+
+	req := httptest.NewRequest(http.MethodGet, "/", nil)
+	req = mux.SetURLVars(req, map[string]string{"id": "18"})
+
+	w := httptest.NewRecorder()
+	controller.FindById(w, req)
+
+	response := w.Result()
+	if response.StatusCode != http.StatusOK {
+		t.Errorf("Got status %v, wanted status %v", response.StatusCode, http.StatusOK)
+	}
+
+	jsonBytes, _ := ioutil.ReadAll(response.Body)
+	contentLength, _ := strconv.Atoi(response.Header.Get("Content-Length"))
+	if contentLength != len(jsonBytes) {
+		t.Errorf("Got %v, wanted %v", contentLength, len(jsonBytes))
+	}
+
+	contentType := response.Header.Get("Content-Type")
+	if contentType != "application/json" {
+		t.Errorf("Got %v, wanted application/json", contentType)
+	}
+
+	json := string(jsonBytes)
+	expected := "{\"id\":18,\"title\":\"Test post\",\"body\":\"Some example post\",\"publishedDate\":\"2019-11-23T10:42:36\",\"user\":{\"id\":4,\"username\":\"Some user\"}}"
+	if json != expected {
+		t.Errorf("Got %v, wanted %v", json, expected)
+	}
 }

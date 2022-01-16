@@ -1,13 +1,13 @@
 package rest
 
 import (
+	"errors"
 	"github.com/gorilla/mux"
 	commentRest "go-example/comment/rest"
 	"go-example/user/rest"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
-	"strconv"
 	"testing"
 )
 
@@ -28,16 +28,32 @@ func Test_FindByUserId_wrongUserId(t *testing.T) {
 }
 
 type mockFacade struct {
-	findByUserIdImpl func(userId int) []*PostByUserDto
-	findByIdImpl     func(id int) *PostByIdDto
+	findByUserIdImpl func(userId int) ([]*PostByUserDto, error)
+	findByIdImpl     func(id int) (*PostByIdDto, error)
 }
 
-func (f *mockFacade) FindByUserId(userId int) []*PostByUserDto {
+func (f *mockFacade) FindByUserId(userId int) ([]*PostByUserDto, error) {
 	return f.findByUserIdImpl(userId)
 }
 
-func (f *mockFacade) FindById(id int) *PostByIdDto {
+func (f *mockFacade) FindById(id int) (*PostByIdDto, error) {
 	return f.findByIdImpl(id)
+}
+
+func Test_FindByUserId_withError(t *testing.T) {
+	facade := mockFacade{findByUserIdImpl: func(userId int) ([]*PostByUserDto, error) { return nil, errors.New("Error finding posts") }}
+	controller := controllerImpl{facade: &facade}
+
+	req := httptest.NewRequest(http.MethodGet, "/", nil)
+	req = mux.SetURLVars(req, map[string]string{"userId": "13"})
+
+	w := httptest.NewRecorder()
+	controller.FindByUserId(w, req)
+
+	response := w.Result()
+	if response.StatusCode != http.StatusInternalServerError {
+		t.Errorf("Got status %v, wanted status %v", response.StatusCode, http.StatusInternalServerError)
+	}
 }
 
 func Test_FindByUserId_withSuccess(t *testing.T) {
@@ -46,7 +62,7 @@ func Test_FindByUserId_withSuccess(t *testing.T) {
 		{Id: 2, Title: "Another example post", Body: "Integer malesuada lorem non nunc.", PublishedDate: "2021-03-15T17:53:07"},
 	}
 
-	facade := mockFacade{findByUserIdImpl: func(userId int) []*PostByUserDto { return dtos }}
+	facade := mockFacade{findByUserIdImpl: func(userId int) ([]*PostByUserDto, error) { return dtos, nil }}
 	controller := controllerImpl{facade: &facade}
 
 	req := httptest.NewRequest(http.MethodGet, "/", nil)
@@ -61,7 +77,7 @@ func Test_FindByUserId_withSuccess(t *testing.T) {
 	}
 
 	jsonBytes, _ := ioutil.ReadAll(response.Body)
-	contentLength, _ := strconv.Atoi(response.Header.Get("Content-Length"))
+	contentLength := int(response.ContentLength)
 	if contentLength != len(jsonBytes) {
 		t.Errorf("Got %v, wanted %v", contentLength, len(jsonBytes))
 	}
@@ -97,8 +113,24 @@ func Test_FindById_wrongId(t *testing.T) {
 	}
 }
 
+func Test_FindById_withError(t *testing.T) {
+	facade := mockFacade{findByIdImpl: func(id int) (*PostByIdDto, error) { return nil, errors.New("Error finding posts") }}
+	controller := controllerImpl{facade: &facade}
+
+	req := httptest.NewRequest(http.MethodGet, "/", nil)
+	req = mux.SetURLVars(req, map[string]string{"id": "18"})
+
+	w := httptest.NewRecorder()
+	controller.FindById(w, req)
+
+	response := w.Result()
+	if response.StatusCode != http.StatusInternalServerError {
+		t.Errorf("Got status %v, wanted status %v", response.StatusCode, http.StatusInternalServerError)
+	}
+}
+
 func Test_FindById_notFound(t *testing.T) {
-	facade := mockFacade{findByIdImpl: func(id int) *PostByIdDto { return nil }}
+	facade := mockFacade{findByIdImpl: func(id int) (*PostByIdDto, error) { return nil, nil }}
 	controller := controllerImpl{facade: &facade}
 
 	req := httptest.NewRequest(http.MethodGet, "/", nil)
@@ -114,7 +146,7 @@ func Test_FindById_notFound(t *testing.T) {
 }
 
 func Test_FindById_success(t *testing.T) {
-	facade := mockFacade{findByIdImpl: func(id int) *PostByIdDto {
+	facade := mockFacade{findByIdImpl: func(id int) (*PostByIdDto, error) {
 		return &PostByIdDto{
 			Id:            id,
 			Title:         "Test post",
@@ -130,7 +162,7 @@ func Test_FindById_success(t *testing.T) {
 					User:          &rest.UserReadDto{Id: 5, Username: "Another user"},
 				},
 			},
-		}
+		}, nil
 	}}
 	controller := controllerImpl{facade: &facade}
 
@@ -146,7 +178,7 @@ func Test_FindById_success(t *testing.T) {
 	}
 
 	jsonBytes, _ := ioutil.ReadAll(response.Body)
-	contentLength, _ := strconv.Atoi(response.Header.Get("Content-Length"))
+	contentLength := int(response.ContentLength)
 	if contentLength != len(jsonBytes) {
 		t.Errorf("Got %v, wanted %v", contentLength, len(jsonBytes))
 	}

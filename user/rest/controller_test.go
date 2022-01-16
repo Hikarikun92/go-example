@@ -1,20 +1,20 @@
 package rest
 
 import (
+	"errors"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
-	"strconv"
 	"testing"
 )
 
 func Test_controllerImpl_FindAll_withSuccess(t *testing.T) {
-	facade := mockFacade{findAllImpl: func() []*UserReadDto {
+	facade := mockFacade{findAllImpl: func() ([]*UserReadDto, error) {
 		return []*UserReadDto{
 			{Id: 1, Username: "Administrator"},
 			{Id: 2, Username: "John Doe"},
 			{Id: 3, Username: "Mary Doe"},
-		}
+		}, nil
 	}}
 	controller := controllerImpl{facade: &facade}
 
@@ -28,7 +28,7 @@ func Test_controllerImpl_FindAll_withSuccess(t *testing.T) {
 	}
 
 	jsonBytes, _ := ioutil.ReadAll(response.Body)
-	contentLength, _ := strconv.Atoi(response.Header.Get("Content-Length"))
+	contentLength := int(response.ContentLength)
 	if contentLength != len(jsonBytes) {
 		t.Errorf("Got %v, wanted %v", contentLength, len(jsonBytes))
 	}
@@ -46,9 +46,23 @@ func Test_controllerImpl_FindAll_withSuccess(t *testing.T) {
 }
 
 type mockFacade struct {
-	findAllImpl func() []*UserReadDto
+	findAllImpl func() ([]*UserReadDto, error)
 }
 
-func (f *mockFacade) FindAll() []*UserReadDto {
+func (f *mockFacade) FindAll() ([]*UserReadDto, error) {
 	return f.findAllImpl()
+}
+
+func Test_controllerImpl_FindAll_withError(t *testing.T) {
+	facade := mockFacade{findAllImpl: func() ([]*UserReadDto, error) { return nil, errors.New("Error finding users") }}
+	controller := controllerImpl{facade: &facade}
+
+	req := httptest.NewRequest(http.MethodGet, "/", nil)
+	w := httptest.NewRecorder()
+	controller.FindAll(w, req)
+
+	response := w.Result()
+	if response.StatusCode != http.StatusInternalServerError {
+		t.Errorf("Got status %v, wanted status %v", response.StatusCode, http.StatusInternalServerError)
+	}
 }

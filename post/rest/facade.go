@@ -57,7 +57,8 @@ func toPostByIdDto(post *post.Post) *PostByIdDto {
 		return nil
 	}
 
-	var userCache map[int]*userRest.UserReadDto
+	//Cache to avoid creating DTOs of already converted users
+	userCache := make(map[int]*userRest.UserReadDto)
 
 	comments := make([]*rest.CommentReadDto, len(post.Comments))
 	for i, comment := range post.Comments {

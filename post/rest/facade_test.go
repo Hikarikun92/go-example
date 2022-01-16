@@ -1,6 +1,7 @@
 package rest
 
 import (
+	"errors"
 	"fmt"
 	"go-example/comment"
 	"go-example/post"
@@ -40,11 +41,15 @@ func Test_facadeImpl_FindByUserId_withSuccess(t *testing.T) {
 		},
 	}
 
-	service := mockService{findByUserIdImpl: func(userId int) []*post.Post { return entities }}
+	service := mockService{findByUserIdImpl: func(userId int) ([]*post.Post, error) { return entities, nil }}
 
 	facade := facadeImpl{service: &service}
 
-	dtos := facade.FindByUserId(42)
+	dtos, err := facade.FindByUserId(42)
+	if err != nil {
+		t.Error("Unexpected error", err)
+	}
+
 	if len(dtos) != len(entities) {
 		t.Errorf("Expected %v DTOs, got %v", len(entities), len(dtos))
 	}
@@ -60,16 +65,29 @@ func Test_facadeImpl_FindByUserId_withSuccess(t *testing.T) {
 }
 
 type mockService struct {
-	findByUserIdImpl func(userId int) []*post.Post
-	findByIdImpl     func(id int) *post.Post
+	findByUserIdImpl func(userId int) ([]*post.Post, error)
+	findByIdImpl     func(id int) (*post.Post, error)
 }
 
-func (s *mockService) FindByUserId(userId int) []*post.Post {
+func (s *mockService) FindByUserId(userId int) ([]*post.Post, error) {
 	return s.findByUserIdImpl(userId)
 }
 
-func (s *mockService) FindById(id int) *post.Post {
+func (s *mockService) FindById(id int) (*post.Post, error) {
 	return s.findByIdImpl(id)
+}
+
+func Test_facadeImpl_FindByUserId_withError(t *testing.T) {
+	service := mockService{findByUserIdImpl: func(userId int) ([]*post.Post, error) { return nil, errors.New("Error finding posts") }}
+	facade := facadeImpl{service: &service}
+
+	dtos, err := facade.FindByUserId(42)
+	if dtos != nil {
+		t.Errorf("Call with error shouldn't return a value")
+	}
+	if err == nil {
+		t.Error("Expected error, got none")
+	}
 }
 
 func Test_facadeImpl_FindById_withSuccess(t *testing.T) {
@@ -78,7 +96,7 @@ func Test_facadeImpl_FindById_withSuccess(t *testing.T) {
 		Title:         "Example post",
 		Body:          "Blabla",
 		PublishedDate: time.Date(2022, time.January, 12, 15, 21, 25, 0, time.UTC),
-		User:          &user.User{Id: 2, Username: "Example user"},
+		User:          &user.User{Id: 2, Username: "John Doe"},
 		Comments: []*comment.Comment{
 			{
 				Id:            8,
@@ -96,11 +114,15 @@ func Test_facadeImpl_FindById_withSuccess(t *testing.T) {
 			},
 		},
 	}
-	service := mockService{findByIdImpl: func(id int) *post.Post { return entity }}
+	service := mockService{findByIdImpl: func(id int) (*post.Post, error) { return entity, nil }}
 	facade := facadeImpl{service: &service}
 
 	//Due to the reference to *User, we can't build an expectedDto and compare it with !=
-	dto := facade.FindById(entity.Id)
+	dto, err := facade.FindById(entity.Id)
+	if err != nil {
+		t.Error("Unexpected error", err)
+	}
+
 	if dto.Id != entity.Id {
 		t.Errorf("dto.Id: expected %v, got %v", entity.Id, dto.Id)
 	}
@@ -162,11 +184,28 @@ func compareUserReadDtoWithEntity(dto *userRest.UserReadDto, entity *user.User) 
 	return result
 }
 
-func Test_facadeImpl_FindById_notFound(t *testing.T) {
-	service := mockService{findByIdImpl: func(id int) *post.Post { return nil }}
+func Test_facadeImpl_FindById_withError(t *testing.T) {
+	service := mockService{findByIdImpl: func(id int) (*post.Post, error) { return nil, errors.New("Error finding posts") }}
 	facade := facadeImpl{service: &service}
 
-	dto := facade.FindById(3)
+	dto, err := facade.FindById(13)
+	if dto != nil {
+		t.Errorf("Call with error shouldn't return a value")
+	}
+	if err == nil {
+		t.Error("Expected error, got none")
+	}
+}
+
+func Test_facadeImpl_FindById_notFound(t *testing.T) {
+	service := mockService{findByIdImpl: func(id int) (*post.Post, error) { return nil, nil }}
+	facade := facadeImpl{service: &service}
+
+	dto, err := facade.FindById(3)
+	if err != nil {
+		t.Error("Unexpected error", err)
+	}
+
 	if dto != nil {
 		t.Errorf("Expected nil, got %v", dto)
 	}

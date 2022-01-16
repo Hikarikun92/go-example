@@ -18,7 +18,7 @@ type controllerImpl struct {
 	facade Facade
 }
 
-func (c *controllerImpl) FindAll(w http.ResponseWriter, req *http.Request) {
+func (c *controllerImpl) FindAll(w http.ResponseWriter, _ *http.Request) {
 	users, err := c.facade.FindAll()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

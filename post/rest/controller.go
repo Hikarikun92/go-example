@@ -27,7 +27,11 @@ func (c *controllerImpl) FindByUserId(w http.ResponseWriter, request *http.Reque
 		return
 	}
 
-	posts := c.facade.FindByUserId(userId)
+	posts, err := c.facade.FindByUserId(userId)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	jsonBytes, err := json.Marshal(posts)
 	if err != nil {
@@ -47,7 +51,12 @@ func (c *controllerImpl) FindById(w http.ResponseWriter, request *http.Request) 
 		return
 	}
 
-	post := c.facade.FindById(id)
+	post, err := c.facade.FindById(id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	if post == nil {
 		http.NotFound(w, request)
 		return

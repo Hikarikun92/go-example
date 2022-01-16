@@ -13,7 +13,7 @@ import (
 )
 
 func main() {
-	db, err := sql.Open("mysql", "blog_backend_user:blog123@tcp(localhost:3306)/blog_backend_go")
+	db, err := sql.Open("mysql", "blog_backend_user:blog123@tcp(localhost:3306)/blog_backend_go?parseTime=true")
 	if err != nil {
 		log.Panicln("Error connecting to database", err)
 	}
@@ -26,7 +26,7 @@ func main() {
 	userFacade := userRest.NewFacade(userService)
 	userController := userRest.NewController(userFacade)
 
-	postRepository := post.NewRepository()
+	postRepository := post.NewRepository(db)
 	postService := post.NewService(postRepository)
 	postFacade := postRest.NewFacade(postService)
 	postController := postRest.NewController(postFacade)

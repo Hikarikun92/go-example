@@ -17,11 +17,3 @@ func (u *UserReadDto) String() string {
 func ToReadDto(u *user.User) *UserReadDto {
 	return &UserReadDto{Id: u.Id, Username: u.Username}
 }
-
-func ToReadDtos(users []*user.User) []*UserReadDto {
-	dtos := make([]*UserReadDto, len(users))
-	for i, u := range users {
-		dtos[i] = ToReadDto(u)
-	}
-	return dtos
-}

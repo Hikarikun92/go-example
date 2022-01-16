@@ -17,21 +17,3 @@ func TestToReadDto(t *testing.T) {
 		t.Errorf("dto.Username: expected %v, got %v", entity.Username, dto.Username)
 	}
 }
-
-func TestToReadDtos(t *testing.T) {
-	entities := []*User{
-		{Id: 1, Username: "User 1"},
-		{Id: 2, Username: "User 2"},
-	}
-	dtos := ToReadDtos(entities)
-	if len(entities) != len(dtos) {
-		t.Errorf("Expected %v DTOs, got %v", len(entities), len(dtos))
-	}
-
-	for i, dto := range dtos {
-		expectedDto := ToReadDto(entities[i])
-		if *dto != *expectedDto {
-			t.Errorf("dtos[%v]: expected %v, got %v", i, expectedDto, dto)
-		}
-	}
-}

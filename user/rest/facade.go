@@ -19,5 +19,10 @@ func (f *facadeImpl) FindAll() ([]*UserReadDto, error) {
 	if err != nil {
 		return nil, err
 	}
-	return ToReadDtos(users), nil
+
+	dtos := make([]*UserReadDto, len(users))
+	for i, u := range users {
+		dtos[i] = ToReadDto(u)
+	}
+	return dtos, nil
 }

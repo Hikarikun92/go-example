@@ -8,8 +8,8 @@ import (
 )
 
 type Facade interface {
-	FindByUserId(userId int) []*PostByUserDto
-	FindById(id int) *PostByIdDto
+	FindByUserId(userId int) ([]*PostByUserDto, error)
+	FindById(id int) (*PostByIdDto, error)
 }
 
 func NewFacade(service post.Service) Facade {
@@ -20,15 +20,19 @@ type facadeImpl struct {
 	service post.Service
 }
 
-func (f *facadeImpl) FindByUserId(userId int) []*PostByUserDto {
-	entities := f.service.FindByUserId(userId)
+func (f *facadeImpl) FindByUserId(userId int) ([]*PostByUserDto, error) {
+	entities, err := f.service.FindByUserId(userId)
+	if err != nil {
+		return nil, err
+	}
+
 	dtos := make([]*PostByUserDto, len(entities))
 
 	for i, entity := range entities {
 		dtos[i] = toPostByUserDto(entity)
 	}
 
-	return dtos
+	return dtos, nil
 }
 
 func toPostByUserDto(post *post.Post) *PostByUserDto {
@@ -40,8 +44,12 @@ func toPostByUserDto(post *post.Post) *PostByUserDto {
 	}
 }
 
-func (f *facadeImpl) FindById(id int) *PostByIdDto {
-	return toPostByIdDto(f.service.FindById(id))
+func (f *facadeImpl) FindById(id int) (*PostByIdDto, error) {
+	p, err := f.service.FindById(id)
+	if err != nil {
+		return nil, err
+	}
+	return toPostByIdDto(p), nil
 }
 
 func toPostByIdDto(post *post.Post) *PostByIdDto {
@@ -49,15 +57,29 @@ func toPostByIdDto(post *post.Post) *PostByIdDto {
 		return nil
 	}
 
+	var userCache map[int]*userRest.UserReadDto
+
 	comments := make([]*rest.CommentReadDto, len(post.Comments))
 	for i, comment := range post.Comments {
+		userDto, ok := userCache[comment.User.Id]
+		if !ok {
+			userDto = userRest.ToReadDto(comment.User)
+			userCache[comment.User.Id] = userDto
+		}
+
 		comments[i] = &rest.CommentReadDto{
 			Id:            comment.Id,
 			Title:         comment.Title,
 			Body:          comment.Body,
 			PublishedDate: util.TimeToIso(comment.PublishedDate),
-			User:          userRest.ToReadDto(comment.User),
+			User:          userDto,
 		}
+	}
+
+	userDto, ok := userCache[post.User.Id]
+	if !ok {
+		userDto = userRest.ToReadDto(post.User)
+		userCache[post.User.Id] = userDto
 	}
 
 	return &PostByIdDto{
@@ -65,7 +87,7 @@ func toPostByIdDto(post *post.Post) *PostByIdDto {
 		Title:         post.Title,
 		Body:          post.Body,
 		PublishedDate: util.TimeToIso(post.PublishedDate),
-		User:          userRest.ToReadDto(post.User),
+		User:          userDto,
 		Comments:      comments,
 	}
 }

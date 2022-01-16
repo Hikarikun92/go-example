@@ -1,22 +1,41 @@
 package user
 
+import "database/sql"
+
 type Repository interface {
-	FindAll() []*User
+	FindAll() ([]*User, error)
 	FindCredentialsByUsername(username string) *Credentials
 }
 
 type repositoryImpl struct {
+	db *sql.DB
 }
 
-func NewRepository() Repository {
-	return &repositoryImpl{}
+func NewRepository(db *sql.DB) Repository {
+	return &repositoryImpl{db: db}
 }
 
-func (*repositoryImpl) FindAll() []*User {
-	return []*User{
-		{Id: 1, Username: "user1"},
-		{Id: 2, Username: "user2"},
+func (r *repositoryImpl) FindAll() ([]*User, error) {
+	rows, err := r.db.Query("select id, username from `user`")
+	if err != nil {
+		return nil, err
 	}
+	defer rows.Close()
+
+	var users []*User
+	for rows.Next() {
+		var (
+			id       int
+			username string
+		)
+		err := rows.Scan(&id, &username)
+		if err != nil {
+			return nil, err
+		}
+		users = append(users, &User{Id: id, Username: username})
+	}
+
+	return users, nil
 }
 
 func (*repositoryImpl) FindCredentialsByUsername(username string) *Credentials {

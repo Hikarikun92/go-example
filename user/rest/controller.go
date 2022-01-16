@@ -19,7 +19,11 @@ type controllerImpl struct {
 }
 
 func (c *controllerImpl) FindAll(w http.ResponseWriter, req *http.Request) {
-	users := c.facade.FindAll()
+	users, err := c.facade.FindAll()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	jsonBytes, err := json.Marshal(users)
 	if err != nil {

@@ -1,7 +1,7 @@
 package user
 
 type Service interface {
-	FindAll() []*User
+	FindAll() ([]*User, error)
 }
 
 type serviceImpl struct {
@@ -12,6 +12,6 @@ func NewService(repository Repository) Service {
 	return &serviceImpl{repository: repository}
 }
 
-func (s *serviceImpl) FindAll() []*User {
+func (s *serviceImpl) FindAll() ([]*User, error) {
 	return s.repository.FindAll()
 }

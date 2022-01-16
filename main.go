@@ -1,6 +1,8 @@
 package main
 
 import (
+	"database/sql"
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
 	"go-example/post"
 	postRest "go-example/post/rest"
@@ -11,7 +13,15 @@ import (
 )
 
 func main() {
-	userRepository := user.NewRepository()
+	db, err := sql.Open("mysql", "blog_backend_user:blog123@tcp(localhost:3306)/blog_backend_go")
+	if err != nil {
+		log.Panicln("Error connecting to database", err)
+	}
+	if err := db.Ping(); err != nil {
+		log.Panicln("Error connecting to database", err)
+	}
+
+	userRepository := user.NewRepository(db)
 	userService := user.NewService(userRepository)
 	userFacade := userRest.NewFacade(userService)
 	userController := userRest.NewController(userFacade)
@@ -26,8 +36,7 @@ func main() {
 	router.HandleFunc("/users/{userId}/posts", postController.FindByUserId).Methods(http.MethodGet)
 	router.HandleFunc("/posts/{id}", postController.FindById).Methods(http.MethodGet)
 
-	err := http.ListenAndServe("localhost:8080", router)
-	if err != nil {
+	if err := http.ListenAndServe("localhost:8080", router); err != nil {
 		log.Panicln("Error starting server", err)
 	}
 }

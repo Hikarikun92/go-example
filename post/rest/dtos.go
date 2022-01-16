@@ -1,7 +1,8 @@
 package rest
 
 import (
-	user_rest "go-example/user/rest"
+	commentRest "go-example/comment/rest"
+	userRest "go-example/user/rest"
 )
 
 type PostByUserDto struct {
@@ -12,9 +13,10 @@ type PostByUserDto struct {
 }
 
 type PostByIdDto struct {
-	Id            int                    `json:"id"`
-	Title         string                 `json:"title"`
-	Body          string                 `json:"body"`
-	PublishedDate string                 `json:"publishedDate"`
-	User          *user_rest.UserReadDto `json:"user"`
+	Id            int                           `json:"id"`
+	Title         string                        `json:"title"`
+	Body          string                        `json:"body"`
+	PublishedDate string                        `json:"publishedDate"`
+	User          *userRest.UserReadDto         `json:"user"`
+	Comments      []*commentRest.CommentReadDto `json:"comments"`
 }

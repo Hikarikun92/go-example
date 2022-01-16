@@ -1,6 +1,7 @@
 package rest
 
 import (
+	"go-example/comment/rest"
 	"go-example/post"
 	userRest "go-example/user/rest"
 	"go-example/util"
@@ -48,11 +49,23 @@ func toPostByIdDto(post *post.Post) *PostByIdDto {
 		return nil
 	}
 
+	comments := make([]*rest.CommentReadDto, len(post.Comments))
+	for i, comment := range post.Comments {
+		comments[i] = &rest.CommentReadDto{
+			Id:            comment.Id,
+			Title:         comment.Title,
+			Body:          comment.Body,
+			PublishedDate: util.TimeToIso(comment.PublishedDate),
+			User:          userRest.ToReadDto(comment.User),
+		}
+	}
+
 	return &PostByIdDto{
 		Id:            post.Id,
 		Title:         post.Title,
 		Body:          post.Body,
 		PublishedDate: util.TimeToIso(post.PublishedDate),
 		User:          userRest.ToReadDto(post.User),
+		Comments:      comments,
 	}
 }

@@ -37,7 +37,7 @@ func (r *repositoryImpl) FindAll() ([]*User, error) {
 }
 
 func (r *repositoryImpl) FindCredentialsByUsername(username string) (*Credentials, error) {
-	rows, err := r.db.Query("select u.id, u.username, c.password, r.user_id, r.roles from `user` u inner join "+
+	rows, err := r.db.Query("select u.id, u.username, c.password, r.roles from `user` u inner join "+
 		"user_credentials c on c.user_id = u.id left join user_roles r on r.user_id = u.id where username = ?", username)
 	if err != nil {
 		return nil, err
@@ -46,17 +46,16 @@ func (r *repositoryImpl) FindCredentialsByUsername(username string) (*Credential
 
 	//Read all the rows first so that we can perform checks on them later
 	type record struct {
-		id         int
-		username   string
-		password   string
-		roleUserId sql.NullInt32
-		role       sql.NullString
+		id       int
+		username string
+		password string
+		role     sql.NullString
 	}
 	var records []*record
 
 	for rows.Next() {
 		r := record{}
-		err := rows.Scan(&r.id, &r.username, &r.password, &r.roleUserId, &r.role)
+		err := rows.Scan(&r.id, &r.username, &r.password, &r.role)
 		if err != nil {
 			return nil, err
 		}
@@ -75,7 +74,7 @@ func (r *repositoryImpl) FindCredentialsByUsername(username string) (*Credential
 	//Go through the other rows for the user's roles
 	var roles []string
 	for _, rec := range records {
-		if rec.roleUserId.Valid { //If userId is not valid, it means there were no roles
+		if rec.role.Valid { //If the role column is not valid, it means there were no roles
 			roles = append(roles, rec.role.String)
 		}
 	}

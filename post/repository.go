@@ -41,44 +41,84 @@ func (r *repositoryImpl) FindByUserId(userId int) ([]*Post, error) {
 }
 
 func (r *repositoryImpl) FindById(id int) (*Post, error) {
+	rows, err := r.db.Query("select p.id, p.title, p.body, p.published_date, author.id, author.username, c.id, "+
+		"c.title, c.body, c.published_date, commenter.id, commenter.username from post p join user author on "+
+		"author.id = p.user_id left join comment c on c.post_id = p.id left join user commenter on c.user_id = commenter.id "+
+		"where p.id = ? order by c.published_date", id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
 
-	author := &user.User{Id: 1, Username: "Username"}
+	//Read all the rows first so that we can perform checks on them later
+	type record struct {
+		id                   int
+		title                string
+		body                 string
+		publishedDate        time.Time
+		authorId             int
+		authorUsername       string
+		commentId            sql.NullInt32
+		commentTitle         sql.NullString
+		commentBody          sql.NullString
+		commentPublishedDate sql.NullTime
+		commenterId          sql.NullInt32
+		commenterUsername    sql.NullString
+	}
+	var records []*record
 
-	switch id {
-	case 1:
-		return &Post{
-			Id:            1,
-			Title:         "Example post no. 1",
-			Body:          "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse placerat.",
-			PublishedDate: time.Date(2021, time.January, 1, 12, 3, 18, 0, time.UTC),
-			User:          author,
-			Comments: []*comment.Comment{
-				{
-					Id:            1,
-					Title:         "Example comment 1",
-					Body:          "Praesent sapien leo, viverra sed.",
-					PublishedDate: time.Date(2021, time.January, 1, 18, 42, 32, 0, time.UTC),
-					User:          &user.User{Id: 2, Username: "John Doe"},
-				},
-				{
-					Id:            2,
-					Title:         "Great article",
-					Body:          "Nice example!",
-					PublishedDate: time.Date(2021, time.February, 28, 7, 38, 12, 0, time.UTC),
-					User:          &user.User{Id: 3, Username: "Mary Doe"},
-				},
-			},
-		}, nil
-	case 2:
-		return &Post{
-			Id:            2,
-			Title:         "Another example post",
-			Body:          "Integer malesuada lorem non nunc.",
-			PublishedDate: time.Date(2021, time.March, 15, 17, 53, 7, 0, time.UTC),
-			User:          author,
-			Comments:      []*comment.Comment{},
-		}, nil
-	default:
+	for rows.Next() {
+		r := record{}
+		err := rows.Scan(&r.id, &r.title, &r.body, &r.publishedDate, &r.authorId, &r.authorUsername, &r.commentId,
+			&r.commentTitle, &r.commentBody, &r.commentPublishedDate, &r.commenterId, &r.commenterUsername)
+
+		if err != nil {
+			return nil, err
+		}
+		records = append(records, &r)
+	}
+
+	//If there were no rows, this post doesn't exist
+	if len(records) == 0 {
 		return nil, nil
 	}
+
+	//Create the post and its author from the first row
+	first := records[0]
+
+	//Cache to avoid creating user entities of already converted user rows
+	userCache := make(map[int]*user.User)
+
+	author := &user.User{Id: first.authorId, Username: first.authorUsername}
+	userCache[author.Id] = author
+
+	//Go through the other rows for the post's comments
+	var comments []*comment.Comment
+	for _, rec := range records {
+		if rec.commentId.Valid { //If commentId is not valid, it means there were no comments
+			commenter, ok := userCache[int(rec.commenterId.Int32)]
+			if !ok {
+				commenter = &user.User{Id: int(rec.commenterId.Int32), Username: rec.commenterUsername.String}
+				userCache[commenter.Id] = commenter
+			}
+
+			c := &comment.Comment{
+				Id:            int(rec.commentId.Int32),
+				Title:         rec.commentTitle.String,
+				Body:          rec.commentBody.String,
+				PublishedDate: rec.commentPublishedDate.Time,
+				User:          commenter,
+			}
+			comments = append(comments, c)
+		}
+	}
+
+	return &Post{
+		Id:            first.id,
+		Title:         first.title,
+		Body:          first.body,
+		PublishedDate: first.publishedDate,
+		User:          author,
+		Comments:      comments,
+	}, nil
 }

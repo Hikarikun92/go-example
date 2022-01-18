@@ -13,6 +13,7 @@ type Config struct {
 	DatabaseName     string
 	ServerAddress    string
 	ServerPort       string
+	JwtSecret        string
 }
 
 func LoadConfigFromEnvironment() *Config {
@@ -24,6 +25,7 @@ func LoadConfigFromEnvironment() *Config {
 		DatabaseName:     getOptionalEnv("DATABASE_NAME", "blog_backend_go"),
 		ServerAddress:    getOptionalEnv("SERVER_ADDRESS", "localhost"),
 		ServerPort:       getOptionalEnv("SERVER_PORT", "8080"),
+		JwtSecret:        getOptionalEnv("JWT_SECRET", "jwtsecret"),
 	}
 }
 

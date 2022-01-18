@@ -6,6 +6,7 @@ import (
 	"github.com/gorilla/mux"
 	"go-example/post"
 	postRest "go-example/post/rest"
+	"go-example/security"
 	"go-example/user"
 	userRest "go-example/user/rest"
 	"go-example/util"
@@ -35,6 +36,9 @@ func main() {
 	postController := postRest.NewController(postFacade)
 
 	router := mux.NewRouter().StrictSlash(true)
+
+	router.Use(security.AuthenticationMiddleware())
+
 	router.HandleFunc("/users", userController.FindAll).Methods(http.MethodGet)
 	router.HandleFunc("/users/{userId}/posts", postController.FindByUserId).Methods(http.MethodGet)
 	router.HandleFunc("/posts/{id}", postController.FindById).Methods(http.MethodGet)

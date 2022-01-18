@@ -37,7 +37,8 @@ func main() {
 
 	router := mux.NewRouter().StrictSlash(true)
 
-	router.Use(security.AuthenticationMiddleware(config))
+	authenticationManager := security.NewAuthenticationManager(config, userRepository)
+	router.Use(authenticationManager.AuthenticationMiddleware())
 
 	router.HandleFunc("/users", userController.FindAll).Methods(http.MethodGet)
 	router.HandleFunc("/users/{userId}/posts", postController.FindByUserId).Methods(http.MethodGet)

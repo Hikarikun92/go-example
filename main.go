@@ -8,12 +8,15 @@ import (
 	postRest "go-example/post/rest"
 	"go-example/user"
 	userRest "go-example/user/rest"
+	"go-example/util"
 	"log"
 	"net/http"
 )
 
 func main() {
-	db, err := sql.Open("mysql", "blog_backend_user:blog123@tcp(localhost:3306)/blog_backend_go?parseTime=true")
+	config := util.LoadConfigFromEnvironment()
+
+	db, err := sql.Open("mysql", config.GetDataSourceName())
 	if err != nil {
 		log.Panicln("Error connecting to database", err)
 	}
@@ -36,7 +39,7 @@ func main() {
 	router.HandleFunc("/users/{userId}/posts", postController.FindByUserId).Methods(http.MethodGet)
 	router.HandleFunc("/posts/{id}", postController.FindById).Methods(http.MethodGet)
 
-	if err := http.ListenAndServe("localhost:8080", router); err != nil {
+	if err := http.ListenAndServe(config.GetServerAddress(), router); err != nil {
 		log.Panicln("Error starting server", err)
 	}
 }

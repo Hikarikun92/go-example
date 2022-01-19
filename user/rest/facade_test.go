@@ -34,10 +34,15 @@ func Test_facadeImpl_FindAll_withSuccess(t *testing.T) {
 
 type mockService struct {
 	findAllImpl func() ([]*User, error)
+	loginImpl   func(username string, password string) (string, error)
 }
 
 func (s *mockService) FindAll() ([]*User, error) {
 	return s.findAllImpl()
+}
+
+func (s *mockService) Login(username string, password string) (string, error) {
+	return s.loginImpl(username, password)
 }
 
 func Test_facadeImpl_FindAll_withError(t *testing.T) {

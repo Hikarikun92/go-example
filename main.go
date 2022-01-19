@@ -26,7 +26,10 @@ func main() {
 	}
 
 	userRepository := user.NewRepository(db)
-	userService := user.NewService(userRepository)
+
+	authenticationManager := security.NewAuthenticationManager(config, userRepository)
+	userService := user.NewService(userRepository, authenticationManager)
+
 	userFacade := userRest.NewFacade(userService)
 	userController := userRest.NewController(userFacade)
 
@@ -37,7 +40,6 @@ func main() {
 
 	router := mux.NewRouter().StrictSlash(true)
 
-	authenticationManager := security.NewAuthenticationManager(config, userRepository)
 	router.Use(authenticationManager.AuthenticationMiddleware())
 
 	router.HandleFunc("/users", userController.FindAll).Methods(http.MethodGet)

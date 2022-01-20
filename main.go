@@ -7,6 +7,7 @@ import (
 	"go-example/post"
 	postRest "go-example/post/rest"
 	"go-example/security"
+	securityRest "go-example/security/rest"
 	"go-example/user"
 	userRest "go-example/user/rest"
 	"go-example/util"
@@ -35,14 +36,18 @@ func main() {
 	postFacade := postRest.NewFacade(postService)
 	postController := postRest.NewController(postFacade)
 
-	router := mux.NewRouter().StrictSlash(true)
-
 	jwtService := security.NewJwtService(config, userRepository)
+	securityService := security.NewService(userRepository, jwtService)
+	securityFacade := securityRest.NewFacade(securityService)
+	securityController := securityRest.NewController(securityFacade)
+
+	router := mux.NewRouter().StrictSlash(true)
 	router.Use(jwtService.AuthenticationMiddleware())
 
 	router.HandleFunc("/users", userController.FindAll).Methods(http.MethodGet)
 	router.HandleFunc("/users/{userId}/posts", postController.FindByUserId).Methods(http.MethodGet)
 	router.HandleFunc("/posts/{id}", postController.FindById).Methods(http.MethodGet)
+	router.HandleFunc("/login", securityController.Login).Methods(http.MethodPost).Headers("Content-Type", "application/json")
 
 	if err := http.ListenAndServe(config.GetServerAddress(), router); err != nil {
 		log.Panicln("Error starting server", err)

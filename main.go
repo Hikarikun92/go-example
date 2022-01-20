@@ -26,10 +26,7 @@ func main() {
 	}
 
 	userRepository := user.NewRepository(db)
-
-	authenticationManager := security.NewAuthenticationManager(config, userRepository)
-	userService := user.NewService(userRepository, authenticationManager)
-
+	userService := user.NewService(userRepository)
 	userFacade := userRest.NewFacade(userService)
 	userController := userRest.NewController(userFacade)
 
@@ -40,7 +37,8 @@ func main() {
 
 	router := mux.NewRouter().StrictSlash(true)
 
-	router.Use(authenticationManager.AuthenticationMiddleware())
+	jwtService := security.NewJwtService(config, userRepository)
+	router.Use(jwtService.AuthenticationMiddleware())
 
 	router.HandleFunc("/users", userController.FindAll).Methods(http.MethodGet)
 	router.HandleFunc("/users/{userId}/posts", postController.FindByUserId).Methods(http.MethodGet)

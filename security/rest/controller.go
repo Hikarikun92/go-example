@@ -2,6 +2,7 @@ package rest
 
 import (
 	"encoding/json"
+	"io/ioutil"
 	"net/http"
 	"strconv"
 )
@@ -19,9 +20,14 @@ func NewController(facade Facade) Controller {
 }
 
 func (c *controllerImpl) Login(w http.ResponseWriter, r *http.Request) {
-	dto := &LoginDto{}
-	err := json.NewDecoder(r.Body).Decode(dto)
+	bodyBytes, err := ioutil.ReadAll(r.Body)
 	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	dto := &LoginDto{}
+	if err = json.Unmarshal(bodyBytes, dto); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}

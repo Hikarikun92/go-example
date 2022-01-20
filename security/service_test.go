@@ -62,8 +62,8 @@ func Test_serviceImpl_Login_nilCredentials(t *testing.T) {
 	if token != "" {
 		t.Errorf("Unexpected token: %v", token)
 	}
-	if err != nil {
-		t.Error("Unexpected error", err)
+	if err == nil {
+		t.Error("Expected an error, got none")
 	}
 }
 

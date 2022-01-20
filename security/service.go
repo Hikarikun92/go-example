@@ -1,6 +1,7 @@
 package security
 
 import (
+	"errors"
 	"go-example/user"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -20,7 +21,10 @@ func NewService(repository user.Repository, jwtService JwtService) Service {
 
 func (s *serviceImpl) Login(username string, password string) (string, error) {
 	credentials, err := s.repository.FindCredentialsByUsername(username)
-	if credentials == nil || err != nil {
+	if credentials == nil {
+		return "", errors.New("Unknown user: " + username)
+	}
+	if err != nil {
 		return "", err
 	}
 

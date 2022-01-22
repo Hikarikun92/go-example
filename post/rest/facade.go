@@ -3,13 +3,16 @@ package rest
 import (
 	"go-example/comment/rest"
 	"go-example/post"
+	"go-example/user"
 	userRest "go-example/user/rest"
 	"go-example/util"
+	"time"
 )
 
 type Facade interface {
 	FindByUserId(userId int) ([]*PostByUserDto, error)
 	FindById(id int) (*PostByIdDto, error)
+	Create(dto *CreatePostDto, userId int) (int, error)
 }
 
 func NewFacade(service post.Service) Facade {
@@ -91,4 +94,15 @@ func toPostByIdDto(post *post.Post) *PostByIdDto {
 		User:          userDto,
 		Comments:      comments,
 	}
+}
+
+func (f *facadeImpl) Create(dto *CreatePostDto, userId int) (int, error) {
+	p := &post.Post{
+		Title:         dto.Title,
+		Body:          dto.Body,
+		PublishedDate: time.Now(),
+		User:          &user.User{Id: userId},
+	}
+
+	return f.service.Create(p)
 }

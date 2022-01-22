@@ -30,6 +30,7 @@ func Test_FindByUserId_wrongUserId(t *testing.T) {
 type mockFacade struct {
 	findByUserIdImpl func(userId int) ([]*PostByUserDto, error)
 	findByIdImpl     func(id int) (*PostByIdDto, error)
+	createImpl       func(dto *CreatePostDto, userId int) (int, error)
 }
 
 func (f *mockFacade) FindByUserId(userId int) ([]*PostByUserDto, error) {
@@ -38,6 +39,10 @@ func (f *mockFacade) FindByUserId(userId int) ([]*PostByUserDto, error) {
 
 func (f *mockFacade) FindById(id int) (*PostByIdDto, error) {
 	return f.findByIdImpl(id)
+}
+
+func (f *mockFacade) Create(dto *CreatePostDto, userId int) (int, error) {
+	return f.createImpl(dto, userId)
 }
 
 func Test_FindByUserId_withError(t *testing.T) {

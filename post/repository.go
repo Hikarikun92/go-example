@@ -10,6 +10,7 @@ import (
 type Repository interface {
 	FindByUserId(userId int) ([]*Post, error)
 	FindById(id int) (*Post, error)
+	Create(post *Post) (int, error)
 }
 
 type repositoryImpl struct {
@@ -121,4 +122,23 @@ func (r *repositoryImpl) FindById(id int) (*Post, error) {
 		User:          author,
 		Comments:      comments,
 	}, nil
+}
+
+func (r *repositoryImpl) Create(post *Post) (int, error) {
+	stmt, err := r.db.Prepare("insert into post (title, body, published_date, user_id) values (?, ?, ?, ?)")
+	if err != nil {
+		return 0, err
+	}
+	defer stmt.Close()
+
+	result, err := stmt.Exec(post.Title, post.Body, post.PublishedDate, post.User.Id)
+	if err != nil {
+		return 0, err
+	}
+
+	id, err := result.LastInsertId()
+	if err != nil {
+		return 0, err
+	}
+	return int(id), nil
 }

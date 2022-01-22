@@ -67,6 +67,7 @@ func Test_facadeImpl_FindByUserId_withSuccess(t *testing.T) {
 type mockService struct {
 	findByUserIdImpl func(userId int) ([]*post.Post, error)
 	findByIdImpl     func(id int) (*post.Post, error)
+	createImpl       func(post *post.Post) (int, error)
 }
 
 func (s *mockService) FindByUserId(userId int) ([]*post.Post, error) {
@@ -75,6 +76,10 @@ func (s *mockService) FindByUserId(userId int) ([]*post.Post, error) {
 
 func (s *mockService) FindById(id int) (*post.Post, error) {
 	return s.findByIdImpl(id)
+}
+
+func (s *mockService) Create(post *post.Post) (int, error) {
+	return s.createImpl(post)
 }
 
 func Test_facadeImpl_FindByUserId_withError(t *testing.T) {

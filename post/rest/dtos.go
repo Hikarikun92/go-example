@@ -20,3 +20,8 @@ type PostByIdDto struct {
 	User          *userRest.UserReadDto         `json:"user"`
 	Comments      []*commentRest.CommentReadDto `json:"comments"`
 }
+
+type CreatePostDto struct {
+	Title string `json:"title"`
+	Body  string `json:"body"`
+}

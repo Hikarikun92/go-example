@@ -3,6 +3,10 @@ package rest
 import (
 	"encoding/json"
 	"github.com/gorilla/mux"
+	"go-example/security"
+	"go-example/user"
+	"go-example/util"
+	"io/ioutil"
 	"net/http"
 	"strconv"
 )
@@ -10,6 +14,7 @@ import (
 type Controller interface {
 	FindByUserId(w http.ResponseWriter, request *http.Request)
 	FindById(w http.ResponseWriter, request *http.Request)
+	Create(w http.ResponseWriter, request *http.Request)
 }
 
 func NewController(facade Facade) Controller {
@@ -71,4 +76,37 @@ func (c *controllerImpl) FindById(w http.ResponseWriter, request *http.Request) 
 	w.Header().Add("Content-Length", strconv.Itoa(len(jsonBytes)))
 	w.Header().Add("Content-Type", "application/json")
 	_, _ = w.Write(jsonBytes)
+}
+
+func (c *controllerImpl) Create(w http.ResponseWriter, request *http.Request) {
+	credentials, ok := request.Context().Value("credentials").(*user.Credentials)
+	if !ok {
+		http.Error(w, "Unauthorized access", http.StatusUnauthorized)
+		return
+	}
+	if !util.ContainsString(credentials.Roles, security.ROLE_USER) {
+		http.Error(w, "Unauthorized access", http.StatusForbidden)
+		return
+	}
+
+	bodyBytes, err := ioutil.ReadAll(request.Body)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	dto := &CreatePostDto{}
+	if err = json.Unmarshal(bodyBytes, dto); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	id, err := c.facade.Create(dto, credentials.User.Id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Add("Location", "/posts/"+strconv.Itoa(id))
+	w.WriteHeader(http.StatusCreated)
 }

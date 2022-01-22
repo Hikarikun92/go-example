@@ -46,6 +46,7 @@ func main() {
 
 	router.HandleFunc("/users", userController.FindAll).Methods(http.MethodGet)
 	router.HandleFunc("/users/{userId}/posts", postController.FindByUserId).Methods(http.MethodGet)
+	router.HandleFunc("/posts", postController.Create).Methods(http.MethodPost).Headers("Content-Type", "application/json")
 	router.HandleFunc("/posts/{id}", postController.FindById).Methods(http.MethodGet)
 	router.HandleFunc("/login", securityController.Login).Methods(http.MethodPost).Headers("Content-Type", "application/json")
 

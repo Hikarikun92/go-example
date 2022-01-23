@@ -6,7 +6,6 @@ import (
 	"go-example/security"
 	"go-example/user"
 	"go-example/util"
-	"io/ioutil"
 	"net/http"
 	"strconv"
 )
@@ -89,15 +88,9 @@ func (c *controllerImpl) Create(w http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	bodyBytes, err := ioutil.ReadAll(request.Body)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
 	dto := &CreatePostDto{}
-	if err = json.Unmarshal(bodyBytes, dto); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+	if err := util.ParseJson(request.Body, dto); err != nil {
+		http.Error(w, err.Error(), err.Status)
 		return
 	}
 

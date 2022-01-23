@@ -1,8 +1,7 @@
 package rest
 
 import (
-	"encoding/json"
-	"io/ioutil"
+	"go-example/util"
 	"net/http"
 	"strconv"
 )
@@ -20,15 +19,9 @@ func NewController(facade Facade) Controller {
 }
 
 func (c *controllerImpl) Login(w http.ResponseWriter, r *http.Request) {
-	bodyBytes, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
 	dto := &LoginDto{}
-	if err = json.Unmarshal(bodyBytes, dto); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+	if err := util.ParseJson(r.Body, dto); err != nil {
+		http.Error(w, err.Error(), err.Status)
 		return
 	}
 

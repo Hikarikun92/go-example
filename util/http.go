@@ -16,14 +16,18 @@ func (h *HttpError) Error() string {
 	return h.error
 }
 
+func NewHttpError(error string, status int) *HttpError {
+	return &HttpError{error: error, Status: status}
+}
+
 func ParseJson(reader io.Reader, dto interface{}) *HttpError {
 	bodyBytes, err := ioutil.ReadAll(reader)
 	if err != nil {
-		return &HttpError{error: err.Error(), Status: http.StatusInternalServerError}
+		return NewHttpError(err.Error(), http.StatusInternalServerError)
 	}
 
 	if err = json.Unmarshal(bodyBytes, dto); err != nil {
-		return &HttpError{error: err.Error(), Status: http.StatusBadRequest}
+		return NewHttpError(err.Error(), http.StatusBadRequest)
 	}
 
 	return nil

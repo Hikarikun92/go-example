@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"go-example/security"
-	"go-example/user"
 	"go-example/util"
 	"net/http"
 	"strconv"
@@ -78,13 +77,9 @@ func (c *controllerImpl) FindById(w http.ResponseWriter, request *http.Request) 
 }
 
 func (c *controllerImpl) Create(w http.ResponseWriter, request *http.Request) {
-	credentials, ok := request.Context().Value("credentials").(*user.Credentials)
-	if !ok {
-		http.Error(w, "Unauthorized access", http.StatusUnauthorized)
-		return
-	}
-	if !util.ContainsString(credentials.Roles, security.ROLE_USER) {
-		http.Error(w, "Unauthorized access", http.StatusForbidden)
+	credentials, credentialsErr := security.AssertRole(request, security.ROLE_USER)
+	if credentialsErr != nil {
+		http.Error(w, credentialsErr.Error(), credentialsErr.Status)
 		return
 	}
 

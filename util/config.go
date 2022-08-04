@@ -28,7 +28,7 @@ func LoadConfigFromEnvironment() *Config {
 		DatabasePort:     getOptionalEnv("DATABASE_PORT", "3306"),
 		DatabaseName:     getOptionalEnv("DATABASE_NAME", "blog_backend_go"),
 		ServerAddress:    getOptionalEnv("SERVER_ADDRESS", "localhost"),
-		ServerPort:       getOptionalEnv("SERVER_PORT", "8080"),
+		ServerPort:       getOptionalEnv("PORT", "8080"),
 		JwtSecret:        []byte(getOptionalEnv("JWT_SECRET", "jwtsecret")),
 	}
 

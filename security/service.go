@@ -2,7 +2,7 @@ package security
 
 import (
 	"errors"
-	"go-example/user"
+	"github.com/Hikarikun92/go-example/user"
 	"golang.org/x/crypto/bcrypt"
 )
 

@@ -1,7 +1,7 @@
 package rest
 
 import (
-	. "go-example/user"
+	. "github.com/Hikarikun92/go-example/user"
 	"testing"
 )
 

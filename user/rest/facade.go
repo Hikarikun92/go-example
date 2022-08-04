@@ -1,6 +1,6 @@
 package rest
 
-import "go-example/user"
+import "github.com/Hikarikun92/go-example/user"
 
 type Facade interface {
 	FindAll() ([]*UserReadDto, error)

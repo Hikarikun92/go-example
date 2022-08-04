@@ -2,8 +2,8 @@ package post
 
 import (
 	"database/sql"
-	"go-example/comment"
-	"go-example/user"
+	"github.com/Hikarikun92/go-example/comment"
+	"github.com/Hikarikun92/go-example/user"
 	"time"
 )
 

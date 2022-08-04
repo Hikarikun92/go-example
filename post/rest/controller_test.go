@@ -3,8 +3,8 @@ package rest
 import (
 	"errors"
 	"github.com/gorilla/mux"
-	commentRest "go-example/comment/rest"
-	"go-example/user/rest"
+	commentRest "github.com/Hikarikun92/go-example/comment/rest"
+	"github.com/Hikarikun92/go-example/user/rest"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"

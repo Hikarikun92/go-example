@@ -2,7 +2,7 @@ package security
 
 import (
 	"context"
-	"go-example/user"
+	"github.com/Hikarikun92/go-example/user"
 	"net/http"
 	"net/http/httptest"
 	"testing"

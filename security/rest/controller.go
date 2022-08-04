@@ -1,7 +1,7 @@
 package rest
 
 import (
-	"go-example/util"
+	"github.com/Hikarikun92/go-example/util"
 	"net/http"
 	"strconv"
 )

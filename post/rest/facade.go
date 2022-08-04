@@ -1,11 +1,11 @@
 package rest
 
 import (
-	"go-example/comment/rest"
-	"go-example/post"
-	"go-example/user"
-	userRest "go-example/user/rest"
-	"go-example/util"
+	"github.com/Hikarikun92/go-example/comment/rest"
+	"github.com/Hikarikun92/go-example/post"
+	"github.com/Hikarikun92/go-example/user"
+	userRest "github.com/Hikarikun92/go-example/user/rest"
+	"github.com/Hikarikun92/go-example/util"
 	"time"
 )
 

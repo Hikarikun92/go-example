@@ -1,8 +1,8 @@
 package rest
 
 import (
-	commentRest "go-example/comment/rest"
-	userRest "go-example/user/rest"
+	commentRest "github.com/Hikarikun92/go-example/comment/rest"
+	userRest "github.com/Hikarikun92/go-example/user/rest"
 )
 
 type PostByUserDto struct {

@@ -3,7 +3,7 @@ package security
 import (
 	"errors"
 	"github.com/gorilla/mux"
-	u "go-example/user"
+	u "github.com/Hikarikun92/go-example/user"
 	"testing"
 )
 

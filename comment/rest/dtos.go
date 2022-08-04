@@ -1,7 +1,7 @@
 package rest
 
 import (
-	userRest "go-example/user/rest"
+	userRest "github.com/Hikarikun92/go-example/user/rest"
 )
 
 type CommentReadDto struct {

@@ -1,8 +1,8 @@
 package security
 
 import (
-	"go-example/user"
-	"go-example/util"
+	"github.com/Hikarikun92/go-example/user"
+	"github.com/Hikarikun92/go-example/util"
 	"net/http"
 )
 

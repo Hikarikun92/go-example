@@ -1,6 +1,6 @@
 package rest
 
-import "go-example/security"
+import "github.com/Hikarikun92/go-example/security"
 
 type Facade interface {
 	Login(dto *LoginDto) (string, error)

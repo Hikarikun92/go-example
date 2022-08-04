@@ -3,8 +3,8 @@ package rest
 import (
 	"encoding/json"
 	"github.com/gorilla/mux"
-	"go-example/security"
-	"go-example/util"
+	"github.com/Hikarikun92/go-example/security"
+	"github.com/Hikarikun92/go-example/util"
 	"net/http"
 	"strconv"
 )

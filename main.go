@@ -10,6 +10,7 @@ import (
 	userRest "github.com/Hikarikun92/go-example/user/rest"
 	"github.com/Hikarikun92/go-example/util"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
@@ -53,8 +54,14 @@ func main() {
 	router.HandleFunc("/posts/{id}", postController.FindById).Methods(http.MethodGet)
 	router.HandleFunc("/login", securityController.Login).Methods(http.MethodPost).Headers("Content-Type", "application/json")
 
+	allowedOrigins := handlers.AllowedOrigins([]string{"*"})
+	allowedMethods := handlers.AllowedMethods([]string{"*"})
+	exposedHeaders := handlers.ExposedHeaders([]string{"Location"})
+
+	handler := handlers.CORS(allowedOrigins, allowedMethods, exposedHeaders)(router)
+
 	log.Println("Application initialized")
-	if err := http.ListenAndServe(config.GetServerAddress(), router); err != nil {
+	if err := http.ListenAndServe(config.GetServerAddress(), handler); err != nil {
 		log.Panicln("Error starting server", err)
 	}
 }
